@@ -1,0 +1,70 @@
+›<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <!--optional color scales, you can specify your own color scale-->
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <style>
+
+    </style>
+    <body>
+
+<script>
+
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+      .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.json("./movies_lab4.json", function(error, data) {
+  if(error) throw error;
+  // console.log(data)
+
+  var WWbyGenre = d3.nest()
+  .key(function(d) { return d.Major_Genre; })
+  .rollup(function(v) { return d3.mean(v, function(d) { return d.Worldwide_Gross; }); })
+  .entries(data);
+  console.log(WWbyGenre);
+  var xScale = d3.scaleBand()
+                .domain(d3.range(0, WWbyGenre.length))
+                .range([0, width])
+                .paddingInner(0.05);
+
+  var yScale = d3.scaleLinear()
+                .domain([0,d3.max(WWbyGenre)])
+                .range([0, height]);
+
+xScale.domain(data.map(function(d) { return d.key; }));
+yScale.domain([0, d3.max(data, function(d) { return d.value; })]);
+svg.selectAll("")
+          .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d) { return xScale(d.key); })
+            .attr("width", xScale.bandwidth())
+            .attr("y", function(d) { return yScale(d.value); })
+            .attr("height", function(d) { return height - yScale(d.value); });
+      // .attr("y", function(d) {return yScale(d.value); })
+      // .attr("height", function(d) {return height - yScale(d.value); })
+      // .attr("x", function(d, i){return xScale(i)})
+      // .attr("width", xScale.bandwidth());
+
+
+
+});
+
+function type(d) {
+  d.value = +d.value; // coerce to number
+  return d;
+}
+
+</script>
+</body>
